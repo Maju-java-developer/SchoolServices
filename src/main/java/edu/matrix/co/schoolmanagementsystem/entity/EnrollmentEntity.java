@@ -1,6 +1,7 @@
 package edu.matrix.co.schoolmanagementsystem.entity;
 
 import edu.matrix.co.schoolmanagementsystem.enums.StudentStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,8 +23,9 @@ import lombok.NoArgsConstructor;
 public class EnrollmentEntity {
 
     @Id
+    @Column(name = "enrollment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long enrollmentId;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private StudentEntity student;
