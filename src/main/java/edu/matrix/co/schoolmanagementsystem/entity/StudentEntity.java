@@ -23,7 +23,8 @@ import java.util.Set;
 @Data
 public class StudentEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "student_id")
+    private Long studentId;
 
     @Column(name = "first_name")
     private String firstName;
