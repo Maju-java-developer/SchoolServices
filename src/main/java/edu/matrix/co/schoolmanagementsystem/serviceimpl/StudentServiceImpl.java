@@ -5,7 +5,7 @@ import edu.matrix.co.schoolmanagementsystem.dto.PaginationResponseDto;
 import edu.matrix.co.schoolmanagementsystem.dto.StudentDTO;
 import edu.matrix.co.schoolmanagementsystem.entity.StudentEntity;
 import edu.matrix.co.schoolmanagementsystem.repository.StudentRepository;
-import edu.matrix.co.schoolmanagementsystem.services.GenericService;
+import edu.matrix.co.schoolmanagementsystem.services.StudentService;
 import edu.matrix.co.schoolmanagementsystem.transformer.StudentTransformer;
 import edu.matrix.co.schoolmanagementsystem.util.PaginationUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +19,7 @@ import org.springframework.util.ObjectUtils;
 @Service
 @Transactional
 @AllArgsConstructor
-public class StudentServiceImpl implements GenericService<StudentDTO, Long> {
+public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final StudentTransformer studentTransformer;
 

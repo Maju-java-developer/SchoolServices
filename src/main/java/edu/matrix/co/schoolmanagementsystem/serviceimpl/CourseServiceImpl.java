@@ -5,7 +5,7 @@ import edu.matrix.co.schoolmanagementsystem.dto.PaginationRequestDto;
 import edu.matrix.co.schoolmanagementsystem.dto.PaginationResponseDto;
 import edu.matrix.co.schoolmanagementsystem.entity.CourseEntity;
 import edu.matrix.co.schoolmanagementsystem.repository.CourseRepository;
-import edu.matrix.co.schoolmanagementsystem.services.GenericService;
+import edu.matrix.co.schoolmanagementsystem.services.CourseService;
 import edu.matrix.co.schoolmanagementsystem.transformer.CourseTransformer;
 import edu.matrix.co.schoolmanagementsystem.util.PaginationUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,10 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Service
 @Transactional
 @AllArgsConstructor
-public class CourseServiceImpl implements GenericService<CourseDTO, Long> {
+public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
     private final CourseTransformer courseTransformer;
 
@@ -28,35 +31,52 @@ public class CourseServiceImpl implements GenericService<CourseDTO, Long> {
         if (ObjectUtils.isEmpty(courseDTO)){
             throw new EntityNotFoundException("courseDTO is null");
         }
-        CourseEntity save = courseRepository.save(courseTransformer.toEntity(courseDTO));
-        return courseTransformer.toDto(save);
+        CourseEntity entity = courseTransformer.toEntity(courseDTO);
+
+        // handle prerequisites inside service, not controller
+        if (courseDTO.getPrerequisiteIds() != null && !courseDTO.getPrerequisiteIds().isEmpty()) {
+            Set<CourseEntity> prereqs = new HashSet<>(courseRepository.findAllById(courseDTO.getPrerequisiteIds()));
+            entity.setPrerequisites(prereqs);
+        }
+
+        CourseEntity saved = courseRepository.save(entity);
+        return courseTransformer.toDto(saved);
     }
 
     @Override
     public void deleteById(Long courseId) {
-        if (courseRepository.existsById(courseId)) {
-            courseRepository.deleteById(courseId);
-        }
-        throw new EntityNotFoundException("course with id " + courseId + " not found");
+        if (ObjectUtils.isEmpty(courseId))
+            throw new EntityNotFoundException("courseId is required");
+        if (!courseRepository.existsById(courseId))
+            throw new EntityNotFoundException("Course with id " + courseId + " not found");
+
+        courseRepository.deleteById(courseId);
     }
 
     @Override
-    public CourseDTO update(Long studentId, CourseDTO changes) {
-        CourseEntity courseEntity = courseRepository.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Student with id " + studentId + " not found"));
-        CourseEntity updateEntity = courseTransformer.toUpdateEntity(changes, courseEntity);
-        courseRepository.save(updateEntity);
-        return courseTransformer.toDto(updateEntity);
+    public CourseDTO update(Long courseId, CourseDTO changes) {
+        if (ObjectUtils.isEmpty(courseId))
+            throw new EntityNotFoundException("courseId is required");
+
+        CourseEntity existing = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course with id " + courseId + " not found"));
+
+        CourseEntity updatedEntity = courseTransformer.toUpdateEntity(changes, existing);
+
+        // handle prerequisites update
+        if (changes.getPrerequisiteIds() != null) {
+            Set<CourseEntity> prereqs = new HashSet<>(courseRepository.findAllById(changes.getPrerequisiteIds()));
+            updatedEntity.setPrerequisites(prereqs);
+        }
+
+        CourseEntity saved = courseRepository.save(updatedEntity);
+        return courseTransformer.toDto(saved);
     }
 
     @Override
     public PaginationResponseDto findAllPaginated(PaginationRequestDto requestDto) {
-        // create page request
         Pageable pageRequest = PaginationUtils.createPageRequest(requestDto);
-
-        // get data from repository
         Page<CourseEntity> pageResult = courseRepository.findAll(pageRequest);
-
-        // build data from repository
         return PaginationUtils.buildPaginationResponse(pageResult);
     }
 

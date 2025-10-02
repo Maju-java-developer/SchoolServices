@@ -3,7 +3,7 @@ package edu.matrix.co.schoolmanagementsystem.controller;
 import edu.matrix.co.schoolmanagementsystem.dto.PaginationRequestDto;
 import edu.matrix.co.schoolmanagementsystem.dto.PaginationResponseDto;
 import edu.matrix.co.schoolmanagementsystem.dto.StudentDTO;
-import edu.matrix.co.schoolmanagementsystem.services.GenericService;
+import edu.matrix.co.schoolmanagementsystem.services.StudentService;
 import edu.matrix.co.schoolmanagementsystem.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("students")
 @AllArgsConstructor
 public class StudentController {
-    private final GenericService<StudentDTO, Long> studentService;
+    private final StudentService studentService;
 
     @PostMapping("createStudent")
     public ResponseEntity<?> create(@Valid @RequestBody StudentDTO dto){
